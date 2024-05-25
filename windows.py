@@ -8,15 +8,14 @@ from string import ascii_uppercase
 from datetime import datetime
 from datetime import timedelta
 import uuid
-import sched
 
 level = ['alert', 'default', 'info', 'abobas']
-log_file = '';
+log_file = ''
+
+
 class Event:
     def __init__(self):
         self.time = datetime.now() + timedelta(days=randint(1, 365), minutes=randint(0, 59), seconds=randint(0, 59))
-        # self.month = self.time.strftime("%b")
-        # self.day = self.time.strftime("%d")
         self.user = ''.join(choices(ascii_uppercase, k=randint(5, 15)))
         self.success = choice([True, False])
         self.level = choice(level)
@@ -31,18 +30,11 @@ def do_something(scheduler):
     global log_file
     global DELAY_MILLIS
     scheduler.enter(DELAY_MILLIS, 1, do_something, (scheduler,))
-    log_file += str(Event()) + '\n'
-    print(log_file)
-    # then do your stuff
 
 
 HOST = "127.0.0.1"
 PORT = int(sys.argv[1])
 DELAY_MILLIS = int(sys.argv[2])
-
-scheduler = sched.scheduler(time.time, time.sleep)
-scheduler.enter(DELAY_MILLIS, 1, do_something, (scheduler,))
-scheduler.run()
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
@@ -51,5 +43,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     with conn:
         print(f"Connected by {addr}")
         while True:
+            if len(log_file) > 1e4:
+                log_file = ''
+            log_file += str(Event()) + '\n'
+
             time.sleep(DELAY_MILLIS / 1000)
-            conn.sendall(str(log_file).encode('ascii'))
+            conn.sendall(log_file.encode('ascii'))
