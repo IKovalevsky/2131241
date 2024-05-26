@@ -28,19 +28,17 @@ class LogListener:
             print(f"[!] {host}:{port} - connection dropped.")
 
     def start(self, host, ports):
-        # Создаем процессы для прослушивания портов
         processes = []
         for port in ports:
             process = mp.Process(target=self.listen_tcp_service, args=(host, port))
             processes.append(process)
             process.start()
 
-        # Ждем завершения процессов прослушивания портов
         for process in processes:
             process.join()
 
 if __name__ == '__main__':
-    queue = mp.Queue()  # Создаем разделяемую очередь
+    queue = mp.Queue()
     listener = LogListener(queue)
     listener.start('127.0.0.1', [10000, 10001])
 
