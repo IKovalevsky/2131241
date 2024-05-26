@@ -1,6 +1,2 @@
-windows:10001:1426
-windows:10002:2160
-windows:10003:1474
-switch:10021:1533
-switch:10022:531
-switch:10023:2153
+windows:10000:2225
+switch:10001:1172

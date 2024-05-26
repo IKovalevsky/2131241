@@ -19,9 +19,9 @@ run_script() {
   done
 }
 
-run_script "windows.py" 10001 10003 "windows"
+run_script "windows.py" 10000 10000 "windows"
 
-run_script "switch.py" 10021 10023 "switch"
+run_script "switch.py" 10001 10001 "switch"
 
 echo "Информация о запусках записана в $devices."
 
