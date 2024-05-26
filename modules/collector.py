@@ -1,38 +1,46 @@
 import multiprocessing as mp
 import socket
 
-def listen_tcp_service(host, port):
-    try:
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect((host, port))
+class LogListener:
+    def __init__(self, queue):
+        self.queue = queue
 
-        print(f"[+] Connecting to {host}:{port}...")
+    def listen_tcp_service(self, host, port):
+        try:
+            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client_socket.connect((host, port))
 
-        while True:
-            data = client_socket.recv(1024)
-            if not data:
-                break
-            print(data.decode('utf-8').strip())
+            print(f"[+] Connecting to {host}:{port}...")
 
-    except (ConnectionRefusedError, ConnectionResetError, socket.error) as e:
-        print(e)
+            while True:
+                data = client_socket.recv(1024)
+                if not data:
+                    break
+                log_string = data.decode('utf-8').strip()
+                print(log_string)
+                self.queue.put(log_string)
 
-    finally:
-        client_socket.close()
-        print(f"[!] {host}:{port} - connection dropped.")
+        except (ConnectionRefusedError, ConnectionResetError, socket.error) as e:
+            print(e)
 
-def main():
-    host = '127.0.0.1'
-    ports = [10000, 10001]
-    processes = []
+        finally:
+            client_socket.close()
+            print(f"[!] {host}:{port} - connection dropped.")
 
-    for port in ports:
-        process = mp.Process(target=listen_tcp_service, args=(host, port))
-        processes.append(process)
-        process.start()
+    def start(self, host, ports):
+        # Создаем процессы для прослушивания портов
+        processes = []
+        for port in ports:
+            process = mp.Process(target=self.listen_tcp_service, args=(host, port))
+            processes.append(process)
+            process.start()
 
-    for process in processes:
-        process.join()
+        # Ждем завершения процессов прослушивания портов
+        for process in processes:
+            process.join()
 
 if __name__ == '__main__':
-    main()
+    queue = mp.Queue()  # Создаем разделяемую очередь
+    listener = LogListener(queue)
+    listener.start('127.0.0.1', [10000, 10001])
+
