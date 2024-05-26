@@ -1,7 +1,7 @@
 import multiprocessing as mp
 import socket
 
-class LogListener:
+class Collector:
     def __init__(self, queue):
         self.queue = queue
 
@@ -17,13 +17,16 @@ class LogListener:
                 if not data:
                     break
                 log_string = data.decode('utf-8').strip()
-                print(log_string)
+                #print(log_string)
                 self.queue.put(log_string)
 
         except (ConnectionRefusedError, ConnectionResetError, socket.error) as e:
             print(e)
 
         finally:
+            while True:
+                if not queue.empty():
+                    print(queue.get(block=False))
             client_socket.close()
             print(f"[!] {host}:{port} - connection dropped.")
 
@@ -39,6 +42,5 @@ class LogListener:
 
 if __name__ == '__main__':
     queue = mp.Queue()
-    listener = LogListener(queue)
+    listener = Collector(queue)
     listener.start('127.0.0.1', [10000, 10001])
-
